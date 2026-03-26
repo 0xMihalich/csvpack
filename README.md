@@ -52,17 +52,17 @@ Metadata contains column names and their data types in a JSON format.
     "delimiter",        // CSV delimiter character
     "quote_char",       // CSV quote character
     "encoding",         // Character encoding
-    has_header          // Boolean indicating if CSV has header
+    "has_header",       // Boolean indicating if CSV has header
 ]
 ```
 
 ### Compression methods
 
-* NONE (value = 0x02) — CSV dump without compression
-* GZIP (value = 0x99) — CSV dump with GZIP compression
-* LZ4 (value = 0x82) — CSV dump with LZ4 compression
-* SNAPPY (value = 0x9f) — CSV dump with Snappy compression
-* ZSTD (value = 0x90) — CSV dump with Zstandard compression (default)
+* `NONE` (value = `0x02`) — CSV dump without compression
+* `GZIP` (value = `0x99`) — CSV dump with GZIP compression
+* `LZ4` (value = `0x82`) — CSV dump with LZ4 compression
+* `SNAPPY` (value = `0x9f`) — CSV dump with Snappy compression
+* `ZSTD` (value = `0x90`) — CSV dump with Zstandard compression (default)
 
 ### Get ENUM for set compression method
 
