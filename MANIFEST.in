@@ -1,0 +1,20 @@
+include CHANGELOG.md
+include LICENSE
+include README.md
+
+recursive-include src/csvpack/csvlib/ *.pyi
+recursive-include src/csvpack/csvlib/ *.pyd
+
+prune src/csvpack/csvlib/csvcore/target
+prune */target
+prune target
+
+global-exclude *.pyd
+global-exclude *.so
+global-exclude *.dylib
+global-exclude *.dll
+global-exclude __pycache__
+global-exclude *.pyc
+global-exclude *.*~
+global-exclude *.orig
+global-exclude *.log

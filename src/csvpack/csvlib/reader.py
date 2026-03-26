@@ -1,0 +1,128 @@
+from collections.abc import (
+    Generator,
+    Iterator,
+)
+from io import BufferedReader
+from typing import Any
+
+from .csvcore import RustCsvReader
+from ..common.repr import csvlib_repr
+
+
+class CSVReader:
+    """CSV dump reader."""
+
+    fileobj: BufferedReader
+    metadata: list[dict[str, str]]
+    delimiter: str
+    quote_char: str
+    encoding: str
+    has_header: bool
+    _reader: RustCsvReader
+
+    def __init__(
+        self,
+        fileobj: BufferedReader,
+        metadata: list[dict[str, str]] | None = None,
+        delimiter: str = ",",
+        quote_char: str = '"',
+        encoding: str = "utf-8",
+        has_header: bool = True,
+    ) -> None:
+        """Class initialization."""
+
+        self.fileobj = fileobj
+        self.delimiter = delimiter
+        self.quote_char = quote_char
+        self.encoding = encoding
+        self.has_header = has_header
+        self.metadata = metadata or []
+        self._reader = RustCsvReader(
+            fileobj=self.fileobj,
+            metadata=self.metadata,
+            has_header=self.has_header,
+            delimiter=self.delimiter,
+            quote_char=self.quote_char,
+            encoding=self.encoding,
+        )
+
+    def __iter__(self) -> Iterator[tuple[Any, ...]]:
+        """Lazy iterator over rows."""
+
+        return self
+
+    def __next__(self) -> tuple[Any, ...]:
+        """Get next row as tuple."""
+
+        return tuple(self._reader.__next__())
+
+    @property
+    def columns(self) -> list[str]:
+        """Get column list."""
+
+        return [
+            column
+            for dct in self.metadata
+            for column, _ in dct.items()
+        ] or [
+            f"col_{num}" for num in range(self.num_columns)
+        ]
+
+    @property
+    def dtypes(self) -> list[str]:
+        """Get data type list."""
+
+        return [
+            dtype
+            for dct in self.metadata
+            for _, dtype in dct.items()
+        ] or [
+            "str" for _ in range(self.num_columns)
+        ]
+
+    @property
+    def num_columns(self) -> int:
+        """Get number of columns."""
+
+        return len(self._reader.get_headers() or self.metadata)
+
+    @property
+    def num_rows(self) -> int:
+        """Get number of rows read so far."""
+
+        return self._reader.row_count()
+
+    def read_row(self) -> Generator[list[Any], None, None]:
+        """Read single row."""
+
+        yield self._reader.__next__()
+
+    def to_rows(self) -> Generator[list[list[Any]], None, None]:
+        """Read all rows."""
+
+        try:
+            while row := self._reader.__next__():
+                yield row
+        except StopIteration:
+            return
+
+    def tell(self) -> int:
+        """Return current position."""
+
+        return self._reader.tell()
+
+    def close(self) -> None:
+        """Close file object."""
+
+        self._reader.close()
+
+    def __repr__(self) -> str:
+        """String representation of CSVReader."""
+
+        return csvlib_repr(
+            self.columns,
+            self.dtypes,
+            self.num_columns,
+            self.num_rows,
+            "reader",
+        )
